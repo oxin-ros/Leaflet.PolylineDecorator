@@ -125,15 +125,20 @@ function interpolateBetweenPoints(ptA, ptB, ratio) {
 }
 
 (function() {
-    // save these original methods before they are overwritten
-    var proto_initIcon = L.Marker.prototype._initIcon;
-    var proto_setPos = L.Marker.prototype._setPos;
+    // Define a flag to track if modifications have been applied
+    if (L.Marker.prototype._rotationInitHookApplied) {
+        return; // If the flag is true, the code has already been applied
+    }
 
-    var oldIE = (L.DomUtil.TRANSFORM === 'msTransform');
+    // save these original methods before they are overwritten
+    const proto_initIcon = L.Marker.prototype._initIcon;
+    const proto_setPos = L.Marker.prototype._setPos;
+
+    const oldIE = (L.DomUtil.TRANSFORM === 'msTransform');
 
     L.Marker.addInitHook(function () {
-        var iconOptions = this.options.icon && this.options.icon.options;
-        var iconAnchor = iconOptions && this.options.icon.options.iconAnchor;
+        const iconOptions = this.options.icon?.options;
+        let iconAnchor = iconOptions && this.options.icon.options.iconAnchor;
         if (iconAnchor) {
             iconAnchor = (iconAnchor[0] + 'px ' + iconAnchor[1] + 'px');
         }
@@ -163,7 +168,7 @@ function interpolateBetweenPoints(ptA, ptB, ratio) {
                     this._icon.style[L.DomUtil.TRANSFORM] = 'rotate(' + this.options.rotationAngle + 'deg)';
                 } else {
                     // for modern browsers, prefer the 3D accelerated version
-                    this._icon.style[L.DomUtil.TRANSFORM] += ' rotateZ(' + this.options.rotationAngle + 'deg)';
+                    this._icon.style[L.DomUtil.TRANSFORM] = 'rotateZ(' + this.options.rotationAngle + 'deg)';
                 }
             }
         },
@@ -180,6 +185,9 @@ function interpolateBetweenPoints(ptA, ptB, ratio) {
             return this;
         }
     });
+
+    // Set the flag to true after applying the modifications
+    L.Marker.prototype._rotationInitHookApplied = true;
 })();
 
 L$1.Symbol = L$1.Symbol || {};
